@@ -2,7 +2,7 @@
 Ler chat do youtube com text to speech.
 
 - Suporta anti-Spam
-- Abreviações como "mds , tmnc , etc..."
-- Selecionar voz, velocidade, timbre
+- Suporta Abreviações "mds , tmnc" etc...
+- Selecionar Voz, Velocidade, Timbre
 
 Java Li. INC (c) 2022
