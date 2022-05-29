@@ -4,26 +4,48 @@
      <meta charset="UTF-8">
      <title>Voz Deeptube Chat</title>
 	 <link rel="stylesheet" href="site.css">	 
+	 <!-- <script src="node_modules/artyom.js/build/artyom.window.min.js"></script> -->
  </head>
  <body style="background: white;">
-     <h1>Leitor da Deeptube</h1>
-	 <div id="Options" style="display: inline-flex;align-content: flex-end;flex-wrap: wrap;align-items: center;">		 
+ 
+    <h1>Leitor da Deeptube V0.3.0-alpha</h1>
+	<span class="float-right" style="float: right;color: silver;"> by Javali.</span>
+	 	
+	<button type="button" class="collapsible">Configurações</button>
+	<div class="content">
+			<label for="strPrefix">Prefixo: </label>
+			<input type="text" id="strPrefix" name="strPrefix" value="Falou" style="text-align: center;margin-left: 1rem;">
+			<button id="btnPausa" style="margin-left: 1rem;">SKIPAR FALA</button>
+			<label for="vozes">Voz:</label>
+			  <select name="vozes" id="vozes">
+				<!-- <option value="br">BR</option> -->
+			  </select>
+			  <div style="display: flex;">
+				<p>Velocidade:</p>
+				<input type="range" id="vozSpeed" min="0.1" max="10" value="1">
+				<p class="lead">Pitch</p>
+				<input type="range" id="pitch" min="0" max="2" value="1" step="0.1"/>
+				<p>Delay:</p>
+				<input type="range" id="vozDelay" min="500" max="10000" value="2000">
+			  </div>			  
 			<label class="switch">
-				<input class="switch-input" onchange="optionMODS(this)" type="checkbox" />
-				<span class="switch-label" data-on="Apenas Moderadores" data-off="Todo Mundo"></span> 
-				<span class="switch-handle"></span> 
-			</label>								
-		<button id="btnPausa">PAUSAR FALA</button>
-		<input type="text" id="strPrefix" name="strPrefix" value="Falou"><br>
-	 </div>
-	 <div>
+					<input class="switch-input" onchange="optionMODS(this)" type="checkbox" />
+					<span class="switch-label" data-on="Apenas Moderadores" data-off="Todo Mundo"></span> 
+					<span class="switch-handle"></span> 
+			</label>
+	</div>
+	 	
+	<div style="display: flex;padding: 1rem;">
+		<label for="LiveID">https://www.youtube.com/watch?v=</label>
 		<input type="text" id="strFala" name="LiveID"><br>
 		<button id="bfalar">Conectar</button>
-	 </div>
-	 <webview  frameborder="0" scrolling="no" id="chatframe" class="style-scope ytd-live-chat-frame" src="" style="height: 35rem;" preload="./deepchat.js" nodeintegration></webview >
+	</div>
+	<webview  frameborder="0" scrolling="no" id="chatframe" class="style-scope ytd-live-chat-frame" src="" style="height: 35rem;" preload="./deepchat.js" nodeintegration></webview >
 	 
-  <script>	     
-   const { ipcRenderer } = require('electron');
+  <script>
+
+    const { ipcRenderer } = require('electron');
+	
 	// Add the event listener for the response from the main process
 	ipcRenderer.on('mainprocess-response', (event, data) => {
 				
@@ -32,14 +54,68 @@
 	});
 
 	var chatQueue = [];
+	var dicReplace = {
+		"mds": "meu deus",
+		"pdp": "pode pá",
+		"vlw": "valeu",
+		"flw": "falou",
+		"n": "não",
+		"mt": "muito",
+		"krlh": "caralho",
+		"crl": "caralho",
+		"fds": "foda-se",
+		"hj": "hoje",
+		"vsfd": "vá se fuder",
+		"vc": "voçê",
+		"q": "que",
+		"tmj": "tamo junto",
+		"tbm": "também",
+		"blz": "beleza",
+	};
+	var voices;
 	
 	var options = {	
 		modOnly: false,
 		delay: 2000,
 	};
 	
+	/*
+	var arty = new Artyom();
+	arty.fatality();// use this to stop any of
+    setTimeout(function(){// if you use artyom.fatality , wait 250 ms to initialize again.
+         arty.initialize({
+            lang:"pt-BR",// A lot of languages are supported. Read the docs !
+            continuous:false,// recognize 1 command and stop listening !
+            listen:false, // Start recognizing
+            debug:true, // Show everything in the console
+            speed:1 // talk normally
+        }).then(function(){
+            console.log("Pronto para falar!");
+        });
+    },250);
+	*/
+	
+	//POPULA VOZES NO DROPDOWN
+	var dropVozes = document.getElementById("vozes");
+	
+	window.speechSynthesis.onvoiceschanged = () => {			  
+	  // Ler Lista de Vozes Disponivel
+	  voices = window.speechSynthesis.getVoices();
+
+	  // Pega a primeira voz por defeito
+	  //speech.voice = voices[0];
+
+	  // Coloca as vozes no DropDown			
+	  voices.forEach((voice, i) => {
+		dropVozes.add( new Option(voice.name, i));
+	  });			  
+	  
+	};
+			
 	//INICIA FUNC LER MSGS
 	var myTimeout = setTimeout(lerMensagens, options.delay);
+	
+	initModules();
 
 	btnPausa.onclick = (e) => {		
 		window.speechSynthesis.cancel();
@@ -47,9 +123,8 @@
 	 
 	bfalar.onclick = (e) => {
 		console.log("Conectando a live : " + strFala.value);
-		//https://www.youtube.com/live_chat?is_popout=1&v=gOw_L3ivDd4
 		chatframe.src ="https://www.youtube.com/live_chat?is_popout=1&v=" + strFala.value;
-		//chatframe.addEventListener('dom-ready', abreDev);	
+		//chatframe.addEventListener('dom-ready', abreDev);			
 	}
 	 
 	function abreDev() {
@@ -67,19 +142,13 @@
 		let msg = chatQueue.shift(0);
 		console.log("Processando: " + msg);
 		window.speechSynthesis.speak(msg);
+		//arty.say(msg.text);
 		
 		myTimeout = setTimeout(lerMensagens, options.delay); //TEMPO DE PAUSA ?
 	}
 
 	function AdicionaMensagem( data ) {
 
-		/*
-		let msgData = {
-							nome: autorNome,
-							msg: autorMSG,
-							isMod: isMod,
-						};
-		*/
 		const autorNome = data.nome;
 		const autorMSG = data.msg;
 		let isMod = data.isMod;	
@@ -87,14 +156,17 @@
 		
 		//LER PREFIXO
 		let strPrefixo = strPrefix.value;
-		if (strPrefixo === "" || strPrefixo == undefined) strPrefixo = " Falou " + ".  ";
+		if (strPrefixo === "" || strPrefixo == undefined) strPrefixo = "Falou " + ".  ";
 		else strPrefixo+= ".  ";
 
 		let utter = new SpeechSynthesisUtterance();
-		utter.lang = 'pt-BR';
-		utter.text = autorNome + strPrefixo + autorMSG;
+		//utter.voiceURI = 'Google português do Brasil';
+		//utter.lang = 'pt-BR';
+		utter.text = autorNome + " " + strPrefixo + antiSpam(autorMSG);
 		utter.volume = 0.8;
-		utter.rate = 0.8;
+		utter.rate = vozSpeed.value;
+		utter.pitch = pitch.value;
+		utter.voice = voices[dropVozes.selectedIndex];
 
 		if (options.modOnly && !isMod) {
 			//NAO E MOD...
@@ -103,7 +175,6 @@
 		}
 
 		chatQueue.push(utter);
-		//window.speechSynthesis.speak(utter);
 	}
 	
 	function optionMODS(elem) {
@@ -114,7 +185,66 @@
 			options.modOnly = false;
 		}
 	}
-	 
+	
+	function charSplit(str) {
+		var arr = [], l, j = -1;
+		for (var i=0; i<str.length; i++) {
+			var c = str.charAt(i);
+			l==c ? arr[j] += c : arr[++j] = c;
+			l=c;
+		}
+		return arr;
+	}
+	
+	function traduzMSG(msg) {
+	
+		let msgCheck = msg.toLowerCase();
+		if (dicReplace[msgCheck] != undefined) return dicReplace[msgCheck];
+			
+		return msg;
+	}
+	
+	function antiSpam(msg) {
+		
+		var txtsplit = charSplit(msg);
+		var finalMSG = msg;
+		
+		for (var i=0;i<txtsplit.length;i++) {
+			let curMsg = txtsplit[i];
+			if (curMsg.length > 5) {
+				//trim
+				txtsplit[i] = curMsg[0].repeat(3);
+			}					
+		}
+		
+		finalMSG = txtsplit.join('');
+		
+		//TRADUZ
+		var arrMSG = finalMSG.split(" ");
+		arrMSG.forEach( (word,index) =>  {
+			arrMSG[index] = traduzMSG(word);
+		});		
+		finalMSG = arrMSG.join(' ');
+		
+		return finalMSG;
+	}
+			
+	function initModules() {
+		var coll = document.getElementsByClassName("collapsible");
+		var i;
+
+		for (i = 0; i < coll.length; i++) {
+		  coll[i].addEventListener("click", function() {
+			this.classList.toggle("active");
+			var content = this.nextElementSibling;
+			if (content.style.display === "block") {
+			  content.style.display = "none";
+			} else {
+			  content.style.display = "block";
+			}
+		  });
+		}
+	}
  </script>
  </body>
  </html>
