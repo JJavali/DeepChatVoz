@@ -1,20 +1,19 @@
 {
   "name": "deepChat",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.4.0",
+  "description": "Leitor Voz Youtube",
   "main": "main.js",
   "scripts": {
     "start": "electron ."
   },
   "keywords": [],
-  "author": "",
+  "author": "Java Li.",
   "license": "ISC",
   "devDependencies": {
     "electron": "^19.0.1",
     "electron-packager": "^15.5.1"
   },
   "dependencies": {
-    "@alan-ai/alan-sdk-web": "^1.8.32",
-    "artyom.js": "^1.0.6"
+    "@alan-ai/alan-sdk-web": "^1.8.32"
   }
 }
