@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+ <html>
+ <head>
+     <meta charset="UTF-8">
+     <title>Voz Deeptube Chat</title>
+	 <link rel="stylesheet" href="site.css">	 
+ </head>
+ <body style="background: white;">
+     <h1>Leitor da Deeptube</h1>
+	 <div id="Options" style="display: inline-flex;align-content: flex-end;flex-wrap: wrap;align-items: center;">		 
+			<label class="switch">
+				<input class="switch-input" onchange="optionMODS(this)" type="checkbox" />
+				<span class="switch-label" data-on="Apenas Moderadores" data-off="Todo Mundo"></span> 
+				<span class="switch-handle"></span> 
+			</label>								
+		<button id="btnPausa">PAUSAR FALA</button>
+		<input type="text" id="strPrefix" name="strPrefix" value="Falou"><br>
+	 </div>
+	 <div>
+		<input type="text" id="strFala" name="LiveID"><br>
+		<button id="bfalar">Conectar</button>
+	 </div>
+	 <webview  frameborder="0" scrolling="no" id="chatframe" class="style-scope ytd-live-chat-frame" src="" style="height: 35rem;" preload="./deepchat.js" nodeintegration></webview >
+	 
+  <script>	     
+   const { ipcRenderer } = require('electron');
+	// Add the event listener for the response from the main process
+	ipcRenderer.on('mainprocess-response', (event, data) => {
+				
+		//RECEBE A MENSAGEM AQUI DO MAIN.JS
+		AdicionaMensagem(data);
+	});
+
+	var chatQueue = [];
+	
+	var options = {	
+		modOnly: false,
+		delay: 2000,
+	};
+	
+	//INICIA FUNC LER MSGS
+	var myTimeout = setTimeout(lerMensagens, options.delay);
+
+	btnPausa.onclick = (e) => {		
+		window.speechSynthesis.cancel();
+	};
+	 
+	bfalar.onclick = (e) => {
+		console.log("Conectando a live : " + strFala.value);
+		//https://www.youtube.com/live_chat?is_popout=1&v=gOw_L3ivDd4
+		chatframe.src ="https://www.youtube.com/live_chat?is_popout=1&v=" + strFala.value;
+		//chatframe.addEventListener('dom-ready', abreDev);	
+	}
+	 
+	function abreDev() {
+		chatframe.openDevTools();
+	}
+	  
+	function lerMensagens() {
+	
+		if (chatQueue.length == 0)  {
+			console.log("Saindo... Sem mensagens!");
+			myTimeout = setTimeout(lerMensagens, options.delay);
+			return;
+		}
+		
+		let msg = chatQueue.shift(0);
+		console.log("Processando: " + msg);
+		window.speechSynthesis.speak(msg);
+		
+		myTimeout = setTimeout(lerMensagens, options.delay); //TEMPO DE PAUSA ?
+	}
+
+	function AdicionaMensagem( data ) {
+
+		/*
+		let msgData = {
+							nome: autorNome,
+							msg: autorMSG,
+							isMod: isMod,
+						};
+		*/
+		const autorNome = data.nome;
+		const autorMSG = data.msg;
+		let isMod = data.isMod;	
+		console.log(autorNome + " -> " + autorMSG);
+		
+		//LER PREFIXO
+		let strPrefixo = strPrefix.value;
+		if (strPrefixo === "" || strPrefixo == undefined) strPrefixo = " Falou " + ".  ";
+		else strPrefixo+= ".  ";
+
+		let utter = new SpeechSynthesisUtterance();
+		utter.lang = 'pt-BR';
+		utter.text = autorNome + strPrefixo + autorMSG;
+		utter.volume = 0.8;
+		utter.rate = 0.8;
+
+		if (options.modOnly && !isMod) {
+			//NAO E MOD...
+			console.log("Ignorando msg... nao é moderador.");
+			return;
+		}
+
+		chatQueue.push(utter);
+		//window.speechSynthesis.speak(utter);
+	}
+	
+	function optionMODS(elem) {
+		console.log("[option MODS] " + elem.checked);
+		if(elem.checked){
+			options.modOnly = true;
+		}else{
+			options.modOnly = false;
+		}
+	}
+	 
+ </script>
+ </body>
+ </html>
