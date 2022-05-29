@@ -115,6 +115,20 @@
   font-size: 15px;
 }
 
+.collapsible:before {
+    width: 0;
+	height: 0;
+	border-left: 15px solid transparent;
+	border-right: 15px solid transparent;
+	border-top: 15px solid #2f2f2f;
+	font-size: 0;
+	line-height: 0;
+	content: '';
+ 
+	float: right;
+	transition: all 0.5s;
+}
+
 .active, .collapsible:hover {
   background-color: #555;
 }
