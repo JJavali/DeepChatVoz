@@ -8,8 +8,7 @@
  </head>
  <body style="background: white;">
  
-    <h1>Leitor da Deeptube V0.3.0-alpha</h1>
-	<span class="float-right" style="float: right;color: silver;"> by Javali.</span>
+    <h1>Leitor da Deeptube V0.3.0-alpha<span class="float-right" style="float: right;color: silver;font-size: 20px;"> by Javali.</span> </h1>
 	 	
 	<button type="button" class="collapsible">Configurações</button>
 	<div class="content">
@@ -26,7 +25,7 @@
 				<p class="lead">Pitch</p>
 				<input type="range" id="pitch" min="0" max="2" value="1" step="0.1"/>
 				<p>Delay:</p>
-				<input type="range" id="vozDelay" min="500" max="10000" value="2000">
+				<input type="range" onchange="optionDelay(this)" id="vozDelay" min="500" max="10000" value="2000">
 			  </div>			  
 			<label class="switch">
 					<input class="switch-input" onchange="optionMODS(this)" type="checkbox" />
@@ -140,7 +139,7 @@
 		}
 		
 		let msg = chatQueue.shift(0);
-		console.log("Processando: " + msg);
+		//console.log("Processando: " + msg);
 		window.speechSynthesis.speak(msg);
 		//arty.say(msg.text);
 		
@@ -184,6 +183,12 @@
 		}else{
 			options.modOnly = false;
 		}
+	}
+	
+	function optionDelay(elem) {
+		console.log("[option DELAY] " + elem.value);
+		
+		options.delay = elem.value;
 	}
 	
 	function charSplit(str) {
