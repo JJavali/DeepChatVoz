@@ -12,11 +12,13 @@ window.addEventListener('load', function () {
 					const autorNome = added_node.children[1].children[1].children[0].innerText;
 					const autorMSG = added_node.children[1].children[2].innerText;
 					let isMod = added_node.children[1].children[1].children[0].classList.contains("moderator");
+					let isOwner = added_node.children[1].children[1].children[0].classList.contains("owner");
+					let isMember = added_node.children[1].children[1].children[0].classList.contains("member");
 					
 					let msgData = {
 						nome: autorNome,
 						msg: autorMSG,
-						isMod: isMod,
+						isMod: isMod || isOwner || isMember,
 					};
 	
 					ipc.send('invokeAction', msgData);
