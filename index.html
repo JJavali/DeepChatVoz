@@ -8,7 +8,7 @@
  </head>
  <body style="background: white;">
  
-    <h1>Leitor da Deeptube V0.5.0-alpha<span class="float-right" style="float: right;color: silver;font-size: 20px;"> by Javali.</span> </h1>
+    <h1>Leitor da Deeptube V0.6.0-alpha<span class="float-right" style="float: right;color: silver;font-size: 20px;"> by Javali.</span> </h1>
 	 	
 	<button type="button" class="collapsible">Configurações</button>
 	<div class="content">
@@ -43,13 +43,23 @@
 	 
   <script>
 
-    const { ipcRenderer } = require('electron');
+    const { ipcRenderer } = require('electron');	
 	
 	// Add the event listener for the response from the main process
-	ipcRenderer.on('mainprocess-response', (event, data) => {
-				
+	ipcRenderer.on('mainprocess-response', (event, data) => {			
 		//RECEBE A MENSAGEM AQUI DO MAIN.JS
 		AdicionaMensagem(data);
+	});
+	
+	ipcRenderer.on('getFalasReply', (event, data) => {			
+		//RECEBE A MENSAGEM AQUI DO MAIN.JS	
+		var falaKeys = Object.keys(data);
+		for (var i=0;i<falaKeys.length;i++){
+			console.warn("Falas de [ " + falaKeys[i] + " ]");			
+			for (var j=0;j<data[falaKeys[i]].length;j++){
+				console.info(data[falaKeys[i]][j]);
+			}
+		}
 	});
 
 	var chatQueue = [];
@@ -259,6 +269,10 @@
 			}
 		  });
 		}
+	}
+	
+	function getAllFalas() {		
+		ipcRenderer.send('getFalas');
 	}
  </script>
  </body>

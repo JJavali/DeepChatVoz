@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+  margin: 0 auto;
+  max-width: 800px;
+  padding: 0 20px;
+}
+
+.container {
+  border: 2px solid #dedede;
+  background-color: #f1f1f1;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 10px 0;
+}
+
+.darker {
+  border-color: #ccc;
+  background-color: #ddd;
+}
+
+.container::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.container img {
+  float: left;
+  max-width: 60px;
+  width: 100%;
+  margin-right: 20px;
+  border-radius: 50%;
+}
+
+.container img.right {
+  float: right;
+  margin-left: 20px;
+  margin-right:0;
+}
+
+.time-right {
+  float: right;
+  color: #aaa;
+}
+
+.time-left {
+  float: left;
+  color: #999;
+}
+
+.container p {
+	margin: 1rem;
+	margin-top: 0px;
+}
+
+.container h4 {
+	margin-top: 0px;
+    margin-bottom: 5px;
+}
+</style>
+</head>
+<body>
+	<h2>Registo Mensagens</h2>
+	<select name="mensagens" id="mensagens">
+		<option value="todas">Todas</option>
+    </select>
+	
+	
+	<div id="msgs">
+		
+		<!--<div class="container">
+		  <h4>UserName</h4>
+		  <p>Hello. How are you today?</p>		  
+		</div> -->
+		
+	</div>
+		
+</body>
+<script>
+	//config aqui	
+	const { ipcRenderer } = require('electron');
+	
+	console.log("Mensagens Start");
+	
+	mensagens.onchange = (e) => {
+		console.log(e.value);	
+	};
+	
+	getMensagens();
+		
+	ipcRenderer.on('getFalasReply', (event, data) => {			
+		//RECEBE A MENSAGEM AQUI DO MAIN.JS	
+		var falaKeys = Object.keys(data);
+		for (var i=0;i<falaKeys.length;i++){
+			console.warn("Falas de [ " + falaKeys[i] + " ]");			
+			for (var j=0;j<data[falaKeys[i]].length;j++){
+				console.info(data[falaKeys[i]][j]);
+				if (data[falaKeys[i]][j].length > 0)
+					addMensagem(falaKeys[i], data[falaKeys[i]][j]);
+			}
+		}
+	});
+	
+	function addMensagem(user, msg) {
+		var divNova = document.createElement("div");
+		divNova.classList.add("container");
+		var conteudoNome = document.createElement("h4");
+		conteudoNome.innerText = user;
+		var conteudoMsg = document.createElement("p");
+		conteudoMsg.innerText = msg;		
+		divNova.appendChild(conteudoNome); //adiciona o nó de texto à nova div criada
+		divNova.appendChild(conteudoMsg); //adiciona o nó de texto à nova div criada		
+		// adiciona o novo elemento criado e seu conteúdo ao DOM
+		msgs.append(divNova);
+	}
+	
+	function getMensagens() {
+		ipcRenderer.send('getFalas');
+	}
+	
+</script>
+</html>
