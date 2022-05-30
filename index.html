@@ -8,12 +8,12 @@
  </head>
  <body style="background: white;">
  
-    <h1>Leitor da Deeptube V0.7.0-alpha<span class="float-right" style="float: right;color: silver;font-size: 20px;"> by Javali.</span> </h1>
+    <h1>Leitor da Deeptube V0.8.0-alpha<span class="float-right" style="float: right;color: silver;font-size: 20px;"> by Javali.</span> </h1>
 	 	
 	<button type="button" class="collapsible">Configurações</button>
 	<div class="content">
 			<label for="strPrefix">Prefixo: </label>
-			<input type="text" id="strPrefix" name="strPrefix" value="Falou" style="text-align: center;margin-left: 1rem;">
+			<input type="text" id="strPrefix" name="strPrefix" value="Falou" onchange="optionPREFIXO(this)" style="text-align: center;margin-left: 1rem;">
 			<button id="btnPausa" style="margin-left: 1rem;">SKIPAR FALA</button>
 			<label for="vozes">Voz:</label>
 			  <select name="vozes" id="vozes">
@@ -21,11 +21,11 @@
 			  </select>
 			  <div style="display: flex;">
 				<p>Velocidade:</p>
-				<input type="range" id="vozSpeed" min="0.1" max="10" value="1" step="0.1">
+				<input type="range" id="vozSpeed" onchange="optionVELOCIDADE(this)" min="0.1" max="10" value="1" step="0.1">
 				<p class="lead">Timbre</p>
-				<input type="range" id="pitch" min="0" max="2" value="1" step="0.1"/>
+				<input type="range" id="pitch" onchange="optionTIMBRE(this)" min="0" max="2" value="1" step="0.1"/>
 				<p>Delay:</p>
-				<input type="range" onchange="optionDelay(this)" id="vozDelay" min="500" max="10000" value="2000">
+				<input type="range" id="delay" onchange="optionDelay(this)" id="vozDelay" min="500" max="10000" value="2000">
 			  </div>			  
 			<label class="switch">
 					<input class="switch-input" onchange="optionMODS(this)" type="checkbox" />
@@ -51,6 +51,12 @@
 		AdicionaMensagem(data);
 	});
 	
+	//lista negra
+	ipcRenderer.on('carregaListaNegra', (event, data) => {			
+		//RECEBE A MENSAGEM AQUI DO MAIN.JS
+		carregaListaNegra();
+	});
+	
 	ipcRenderer.on('getFalasReply', (event, data) => {			
 		//RECEBE A MENSAGEM AQUI DO MAIN.JS	
 		var falaKeys = Object.keys(data);
@@ -63,6 +69,11 @@
 	});
 
 	var chatQueue = [];
+	var listaNegra = [		
+	]; //NOMES AQUI NAO FALA ---
+	
+	carregaListaNegra();
+	
 	var dicReplace = {
 		"mds": "meu deus",
 		"pdp": "pode pá",
@@ -103,24 +114,21 @@
 	var options = {	
 		modOnly: false,
 		delay: 2000,
+		velocidade: 1,
+		prefix: "Disse Assim",
+		timbre: 1,
 	};
 	
-	/*
-	var arty = new Artyom();
-	arty.fatality();// use this to stop any of
-    setTimeout(function(){// if you use artyom.fatality , wait 250 ms to initialize again.
-         arty.initialize({
-            lang:"pt-BR",// A lot of languages are supported. Read the docs !
-            continuous:false,// recognize 1 command and stop listening !
-            listen:false, // Start recognizing
-            debug:true, // Show everything in the console
-            speed:1 // talk normally
-        }).then(function(){
-            console.log("Pronto para falar!");
-        });
-    },250);
-	*/
-	
+	//LE CONFIGS DO LOCALSTORAGE -
+	if (localStorage.getItem("TIMBRE") == null) options.timbre = 1;
+	else { options.timbre = localStorage.getItem("TIMBRE"); pitch.value = options.timbre  };	
+	if (localStorage.getItem("PREFIXO") == null) options.prefix = "Falou";
+	else { options.prefix = localStorage.getItem("PREFIXO"); strPrefix.value = options.prefix  };	
+	if (localStorage.getItem("DELAY") == null) options.delay = 2000;
+	else { options.delay = localStorage.getItem("DELAY"); delay.value = options.delay  };	
+	if (localStorage.getItem("VELOCIDADE") == null) options.velocidade = 1;
+	else { options.velocidade = localStorage.getItem("VELOCIDADE"); vozSpeed.value = options.velocidade  };
+				
 	//POPULA VOZES NO DROPDOWN
 	var dropVozes = document.getElementById("vozes");
 	
@@ -134,7 +142,7 @@
 	  // Coloca as vozes no DropDown			
 	  voices.forEach((voice, i) => {
 		dropVozes.add( new Option(voice.name, i));
-	  });			  
+	  });
 	  
 	};
 			
@@ -180,6 +188,13 @@
 		let isMod = data.isMod;	
 		console.log(autorNome + " -> " + autorMSG);
 		
+		//VERIFICA LISTA NEGRA -
+		if ( verificaListaNegra(autorNome) ) {
+			//ESTA NA LISTA NEGRA...
+			console.log("[LISTA-NEGRA] Ignorando msg: " + autorNome + " -> " + autorMSG);
+			return;
+		}
+		
 		//LER PREFIXO
 		let strPrefixo = strPrefix.value;
 		if (strPrefixo === "" || strPrefixo == undefined) strPrefixo = "Falou " + ".  ";
@@ -203,6 +218,30 @@
 		chatQueue.push(utter);
 	}
 	
+	function optionTIMBRE(elem) {
+		console.log("[option TIMBRE] " + elem.value);
+		
+		options.timbre = elem.value;
+		
+		localStorage.setItem("TIMBRE", elem.value);
+	}
+	
+	function optionVELOCIDADE(elem) {
+		console.log("[option VELOCIDADE] " + elem.value);
+		
+		options.velocidade = elem.value;
+		
+		localStorage.setItem("VELOCIDADE", elem.value);
+	}
+	
+	function optionPREFIXO(elem) {
+		console.log("[option PREFIXO] " + elem.value);
+		
+		options.prefix = elem.value;
+		
+		localStorage.setItem("PREFIXO",elem.value);
+	}
+	
 	function optionMODS(elem) {
 		console.log("[option MODS] " + elem.checked);
 		if(elem.checked){
@@ -210,12 +249,16 @@
 		}else{
 			options.modOnly = false;
 		}
+		
+		localStorage.setItem("MODS",options.modOnly);
 	}
 	
 	function optionDelay(elem) {
 		console.log("[option DELAY] " + elem.value);
 		
 		options.delay = elem.value;
+		
+		localStorage.setItem("DELAY",elem.value);
 	}
 	
 	function charSplit(str) {
@@ -278,8 +321,41 @@
 		}
 	}
 	
+	function verificaListaNegra(nome) {
+		if (listaNegra.includes(nome))
+		{			
+			return true;
+		}			
+		//NAO ESTA
+		return false;
+	}
+	
+	function addListaNegra(nome) {	
+		if (listaNegra.includes(nome))
+		{
+			console.log("já está na lista negra...");
+			return;
+		}		
+		
+		console.log("[LISTA NEGRA] Adicionado " + nome);
+		listaNegra.push(nome);
+	}
+	
 	function getAllFalas() {		
 		ipcRenderer.send('getFalas');
+	}
+	
+	function carregaListaNegra() {
+		//CARREGA LISTA NEGRA
+		fetch('./listanegra.json').then(response => {
+		  return response.json();
+		}).then(data => {
+		  // JSON DATA
+		  console.log(data);
+		  listaNegra = data;
+		}).catch(err => {
+		  // ERRO	  
+		});
 	}
  </script>
  </body>

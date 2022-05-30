@@ -12,6 +12,13 @@ const mainMenuTemplate = [
 					openNewWindow("mensagens","Registo Mensagens", 680, 620);
 				}
 			},
+			{label:'Recarregar Lista-Negra',
+				click() {
+					console.log("recarregando lista negra");
+					//carregaListaNegra - chama no main form;
+					win.webContents.send('carregaListaNegra', true);	
+				}
+			},
 		    {type:'separator'},
 		    {label:'Exit',
 				click() {
