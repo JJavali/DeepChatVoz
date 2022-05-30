@@ -91,16 +91,14 @@ function createWindow () {
  ipcMain.on('invokeAction', (event, data) => {
 		//var result = "result!";
 		//event.sender.send('actionReply', result);
-		console.log("IPC: (" + data.nome + ") -> " + data.msg );
-		win.webContents.send('mainprocess-response', data);
+		//console.log("IPC: (" + data.nome + ") -> " + data.msg );
 		
+		win.webContents.send('mainprocess-response', data);	
 		//armazena fala:
 		if (dicFalas[data.nome] == undefined) dicFalas[data.nome] = new Array();
-		dicFalas[data.nome].push(data.msg);
-		
+		dicFalas[data.nome].push(data.msg);		
 		//console.table(dicFalas);
  });
- 
  
  var m_OpenWindow = null;
  function openNewWindow(file,strTitle, wid, hei) {

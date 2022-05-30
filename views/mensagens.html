@@ -61,6 +61,16 @@ body {
 	margin-top: 0px;
     margin-bottom: 5px;
 }
+
+.hidden {
+	display: none;
+	transition: all 0.5s;
+}
+
+#msgs {
+	padding: 1rem;
+    background: steelblue;
+}
 </style>
 </head>
 <body>
@@ -69,14 +79,11 @@ body {
 		<option value="todas">Todas</option>
     </select>
 	
-	
-	<div id="msgs">
-		
+	<div id="msgs">		
 		<!--<div class="container">
-		  <h4>UserName</h4>
-		  <p>Hello. How are you today?</p>		  
-		</div> -->
-		
+		  <h4>Nome User</h4>
+		  <p>Mensagem</p>		  
+		</div> -->		
 	</div>
 		
 </body>
@@ -87,7 +94,32 @@ body {
 	console.log("Mensagens Start");
 	
 	mensagens.onchange = (e) => {
-		console.log(e.value);	
+		console.log(e.currentTarget.value);
+		
+		if (e.currentTarget.value == 'todas') {
+			//MOSTRA TODAS AS MSGS
+			for (var i = 0; i < msgs.children.length; i++) {
+			  var msgUser =  msgs.children[i];
+			  msgUser.classList.remove("hidden");			  
+			}
+			
+		} else {
+		
+			//FILTRA AS MENSAGENS PARA O NOME DO USER
+			for (var i = 0; i < msgs.children.length; i++) {
+			  var msgUser =  msgs.children[i];
+			  
+			  let nomeUser = msgUser.children[0].innerText;
+			  if (nomeUser != e.currentTarget.value) {
+				//ESCONDE
+				msgUser.classList.add("hidden");
+			  } else {
+				msgUser.classList.remove("hidden");
+			  }
+			}
+		
+		}
+		
 	};
 	
 	getMensagens();
@@ -95,6 +127,12 @@ body {
 	ipcRenderer.on('getFalasReply', (event, data) => {			
 		//RECEBE A MENSAGEM AQUI DO MAIN.JS	
 		var falaKeys = Object.keys(data);
+		
+		//POPULA DROPDOWN COM OS NOMES
+		falaKeys.forEach((nomeUser, i) => {
+			mensagens.add( new Option(nomeUser, nomeUser));
+		});
+		
 		for (var i=0;i<falaKeys.length;i++){
 			console.warn("Falas de [ " + falaKeys[i] + " ]");			
 			for (var j=0;j<data[falaKeys[i]].length;j++){

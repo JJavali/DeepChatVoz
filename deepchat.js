@@ -20,7 +20,26 @@ window.addEventListener('load', function () {
 						msg: autorMSG,
 						isMod: isMod || isOwner || isMember,
 					};
-	
+					
+					if (autorMSG.length > 0) {				
+						ipc.send('invokeAction', msgData);
+					} else {						
+						console.log("Mensagem vazia -> " + autorMSG);
+					}
+					
+				} else if(added_node.nodeName == 'yt-live-chat-paid-message-renderer') {
+					//DOAÇAO - SUPER CHAT
+					const autorNome = added_node.children[0].children[0].children[4].children[0].children[0].innerText;
+					const autorDoacao = added_node.children[0].children[0].children[4].children[0].children[1].innerText;					
+					
+					console.log("Doaçao -> " + autorNome + " - " + autorDoacao);
+					
+					let msgData = {
+						nome: autorNome,
+						msg: autorNome + " fez uma doação de " + autorDoacao,
+						isMod: true,
+					};
+					
 					ipc.send('invokeAction', msgData);
 				}
 			});
