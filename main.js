@@ -59,6 +59,7 @@ function createWindow () {
 		webviewTag : true,
 		nodeIntegration: true,
 		contextIsolation: false,
+		backgroundThrottling: false
 	 }
 	})
 
@@ -123,7 +124,8 @@ function createWindow () {
     fullscreenable: false,
 	webPreferences: {
 		nodeIntegration: true,
-		contextIsolation: false
+		contextIsolation: false,
+		backgroundThrottling: false
 	 }
   });
   
