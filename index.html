@@ -8,7 +8,7 @@
  </head>
  <body style="background: white;">
  
-    <h1>Leitor da Deeptube V0.8.0-alpha<span class="float-right" style="float: right;color: silver;font-size: 20px;"> by Javali.</span> </h1>
+    <h1>Leitor da Deeptube V0.9.0-alpha<span class="float-right" style="float: right;color: silver;font-size: 20px;"> by Javali.</span> </h1>
 	 	
 	<button type="button" class="collapsible">Configurações</button>
 	<div class="content">
@@ -16,7 +16,7 @@
 			<input type="text" id="strPrefix" name="strPrefix" value="Falou" onchange="optionPREFIXO(this)" style="text-align: center;margin-left: 1rem;">
 			<button id="btnPausa" style="margin-left: 1rem;">SKIPAR FALA</button>
 			<label for="vozes">Voz:</label>
-			  <select name="vozes" id="vozes">
+			  <select name="vozes" id="vozes" onchange="optionVOZ(this)">
 				<!-- <option value="br">BR</option> -->
 			  </select>
 			  <div style="display: flex;">
@@ -107,6 +107,10 @@
 		"ppr": "papo reto",
 		"agr": "agora",
 		"slk": "cê é louco",
+		"fdr": "fii de rapariga",
+		"fdp": "filho da puta",
+		"mlk": "moleque",
+		"fd": "foda",
 	};
 	
 	var voices;
@@ -117,6 +121,7 @@
 		velocidade: 1,
 		prefix: "Disse Assim",
 		timbre: 1,
+		indexvoz: 0,
 	};
 	
 	//LE CONFIGS DO LOCALSTORAGE -
@@ -127,7 +132,7 @@
 	if (localStorage.getItem("DELAY") == null) options.delay = 2000;
 	else { options.delay = localStorage.getItem("DELAY"); delay.value = options.delay  };	
 	if (localStorage.getItem("VELOCIDADE") == null) options.velocidade = 1;
-	else { options.velocidade = localStorage.getItem("VELOCIDADE"); vozSpeed.value = options.velocidade  };
+	else { options.velocidade = localStorage.getItem("VELOCIDADE"); vozSpeed.value = options.velocidade  };	
 				
 	//POPULA VOZES NO DROPDOWN
 	var dropVozes = document.getElementById("vozes");
@@ -135,14 +140,15 @@
 	window.speechSynthesis.onvoiceschanged = () => {			  
 	  // Ler Lista de Vozes Disponivel
 	  voices = window.speechSynthesis.getVoices();
-
-	  // Pega a primeira voz por defeito
-	  //speech.voice = voices[0];
-
+	  
 	  // Coloca as vozes no DropDown			
 	  voices.forEach((voice, i) => {
 		dropVozes.add( new Option(voice.name, i));
 	  });
+	  
+	  // Pega a voz salva
+	  if (localStorage.getItem("INDEXVOZ") == null) options.indexvoz = 0;
+	  else { options.indexvoz = localStorage.getItem("INDEXVOZ"); dropVozes.selectedIndex = options.indexvoz  };
 	  
 	};
 			
@@ -218,6 +224,14 @@
 		chatQueue.push(utter);
 	}
 	
+	function optionVOZ(elem) {
+		console.log("[option VOZ] " + elem.selectedIndex);
+		
+		options.indexvoz = elem.selectedIndex;
+		
+		localStorage.setItem("INDEXVOZ", options.indexvoz);
+	}
+	
 	function optionTIMBRE(elem) {
 		console.log("[option TIMBRE] " + elem.value);
 		
@@ -274,8 +288,8 @@
 	function traduzMSG(msg) {
 	
 		let msgCheck = msg.toLowerCase();
+		if (msgCheck.at(msgCheck.length) == ',' || msgCheck.at(msgCheck.length) == '.') msgCheck = msgCheck.substring(0,msgCheck.length-1);
 		if (dicReplace[msgCheck] != undefined) return dicReplace[msgCheck];
-			
 		return msg;
 	}
 	

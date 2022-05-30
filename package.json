@@ -1,6 +1,6 @@
 {
   "name": "deepChat",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Leitor Voz Youtube",
   "main": "main.js",
   "scripts": {
