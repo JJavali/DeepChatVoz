@@ -288,7 +288,7 @@
 	function traduzMSG(msg) {
 	
 		let msgCheck = msg.toLowerCase();
-		if (msgCheck.at(msgCheck.length) == ',' || msgCheck.at(msgCheck.length) == '.') msgCheck = msgCheck.substring(0,msgCheck.length-1);
+		if (msgCheck.at(msgCheck.length-1) == ',' || msgCheck.at(msgCheck.length-1) == '.') msgCheck = msgCheck.substring(0,msgCheck.length-1);
 		if (dicReplace[msgCheck] != undefined) return dicReplace[msgCheck];
 		return msg;
 	}
