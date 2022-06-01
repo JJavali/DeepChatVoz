@@ -9,7 +9,7 @@ const mainMenuTemplate = [
 		    {label:'Registo Mensagens',
 				click() {
 					console.log("Mostra Mensagens");
-					openNewWindow("mensagens","Registo Mensagens", 680, 620);
+					openNewWindow("mensagens","Registo Mensagens", 680, 640);
 				}
 			},
 			{label:'Recarregar Lista-Negra',
@@ -17,6 +17,13 @@ const mainMenuTemplate = [
 					console.log("recarregando lista negra");
 					//carregaListaNegra - chama no main form;
 					win.webContents.send('carregaListaNegra', true);	
+				}
+			},
+			{label:'Recarregar Abreviações',
+				click() {
+					console.log("recarregando abreviações");
+					//carregaAbreviacoes - chama no main form;
+					win.webContents.send('carregaAbreviacoes', true);	
 				}
 			},
 		    {type:'separator'},

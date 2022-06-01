@@ -8,7 +8,7 @@
  </head>
  <body style="background: white;">
  
-    <h1>Leitor da Deeptube V0.9.0-alpha<span class="float-right" style="float: right;color: silver;font-size: 20px;"> by Javali.</span> </h1>
+    <h1>Leitor da Deeptube V0.9.1-alpha<span class="float-right" style="float: right;color: silver;font-size: 20px;"> by Javali.</span> </h1>
 	 	
 	<button type="button" class="collapsible">Configurações</button>
 	<div class="content">
@@ -39,7 +39,7 @@
 		<input type="text" id="strFala" name="LiveID"><br>
 		<button id="bfalar">Conectar</button>
 	</div>
-	<webview  frameborder="0" scrolling="no" id="chatframe" class="style-scope ytd-live-chat-frame" src="" style="height: 35rem;" preload="./deepchat.js" nodeintegration></webview >
+	<webview frameborder="0" scrolling="no" id="chatframe" class="style-scope ytd-live-chat-frame" src="" style="height: 35rem;" preload="./deepchat.js" nodeintegration></webview >
 	 
   <script>
 
@@ -55,6 +55,11 @@
 	ipcRenderer.on('carregaListaNegra', (event, data) => {			
 		//RECEBE A MENSAGEM AQUI DO MAIN.JS
 		carregaListaNegra();
+	});
+	
+	ipcRenderer.on('carregaAbreviacoes', (event, data) => {			
+		//RECEBE A MENSAGEM AQUI DO MAIN.JS
+		carregaAbreviacoes();
 	});
 	
 	ipcRenderer.on('getFalasReply', (event, data) => {			
@@ -73,45 +78,9 @@
 	]; //NOMES AQUI NAO FALA ---
 	
 	carregaListaNegra();
+	carregaAbreviacoes();
 	
-	var dicReplace = {
-		"mds": "meu deus",
-		"pdp": "pode pá",
-		"vlw": "valeu",
-		"flw": "falou",
-		"n": "não",
-		"mt": "muito",
-		"krlh": "caralho",
-		"crl": "caralho",
-		"fds": "foda-se",
-		"hj": "hoje",
-		"vsfd": "vá se fuder",
-		"vc": "voçê",
-		"q": "que",
-		"tmj": "tamo junto",
-		"tbm": "também",
-		"blz": "beleza",
-		"dps": "depois",
-		"dms": "demais",
-		"msm": "mesmo",
-		"kr": "cara",
-		"dhr": "da hora",
-		"tmnc": "tomar no cú",
-		"vtmnc": "vá tomar no cú",
-		"td": "todo",
-		"yt": "youtube",
-		"slv": "salve",
-		"pq": "porque",
-		"pfvr": "por favor",
-		"vcs": "voçês",
-		"ppr": "papo reto",
-		"agr": "agora",
-		"slk": "cê é louco",
-		"fdr": "fii de rapariga",
-		"fdp": "filho da puta",
-		"mlk": "moleque",
-		"fd": "foda",
-	};
+	var dicReplace = {};
 	
 	var voices;
 	
@@ -164,7 +133,7 @@
 	bfalar.onclick = (e) => {
 		console.log("Conectando a live : " + strFala.value);
 		chatframe.src ="https://www.youtube.com/live_chat?is_popout=1&v=" + strFala.value;
-		//chatframe.addEventListener('dom-ready', abreDev);			
+		//chatframe.addEventListener('dom-ready', abreDev);
 	}
 	 
 	function abreDev() {
@@ -179,10 +148,8 @@
 			return;
 		}
 		
-		let msg = chatQueue.shift(0);
-		//console.log("Processando: " + msg);
-		window.speechSynthesis.speak(msg);
-		//arty.say(msg.text);
+		let msg = chatQueue.shift(0);		
+		window.speechSynthesis.speak(msg);		
 		
 		myTimeout = setTimeout(lerMensagens, options.delay); //TEMPO DE PAUSA ?
 	}
@@ -191,8 +158,7 @@
 
 		const autorNome = data.nome;
 		const autorMSG = data.msg;
-		let isMod = data.isMod;	
-		console.log(autorNome + " -> " + autorMSG);
+		let isMod = data.isMod;			
 		
 		//VERIFICA LISTA NEGRA -
 		if ( verificaListaNegra(autorNome) ) {
@@ -200,6 +166,8 @@
 			console.log("[LISTA-NEGRA] Ignorando msg: " + autorNome + " -> " + autorMSG);
 			return;
 		}
+		
+		console.log(autorNome + " -> " + autorMSG);
 		
 		//LER PREFIXO
 		let strPrefixo = strPrefix.value;
@@ -210,7 +178,7 @@
 		//utter.voiceURI = 'Google português do Brasil';
 		//utter.lang = 'pt-BR';
 		utter.text = autorNome + " " + strPrefixo + antiSpam(autorMSG);
-		utter.volume = 0.8;
+		utter.volume = 1.0;
 		utter.rate = vozSpeed.value;
 		utter.pitch = pitch.value;
 		utter.voice = voices[dropVozes.selectedIndex];
@@ -263,6 +231,10 @@
 		}else{
 			options.modOnly = false;
 		}
+		
+		//LIMPA CHATS
+		chatQueue = [];
+		window.speechSynthesis.cancel();
 		
 		localStorage.setItem("MODS",options.modOnly);
 	}
@@ -367,6 +339,22 @@
 		  // JSON DATA
 		  console.log(data);
 		  listaNegra = data;
+		}).catch(err => {
+		  // ERRO	  
+		});
+	}
+	
+	function carregaAbreviacoes() {
+		//CARREGA Abreviacoes
+		fetch('./abrevs.json').then(response => {
+		  return response.json();
+		}).then(data => {
+		  // JSON DATA
+		  console.log(data);
+		  
+		  //PARSE INTO DIC
+		  dicReplace = data;
+		  
 		}).catch(err => {
 		  // ERRO	  
 		});
